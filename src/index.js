@@ -12,9 +12,15 @@ const PORT = process.env.PORT || 3000;
 const publicDirPath = path.join(__dirname, "../public");
 app.use(express.static(publicDirPath));
 
-io.on('connection', () => {
+io.on('connection', (socket) => {
   console.log('New Websocket connection')
+
+  socket.on('sendMessage', (message) => {
+    io.emit('message', message) //send message to all connected clients
+  })
 })
+
+
 
 server.listen(PORT, () => {
   console.log(chalk.blue("Server is up on PORT " + PORT));
