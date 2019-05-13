@@ -1,28 +1,49 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
 
 <head>
   <title>Socket.IO chat</title>
+  <link rel="stylesheet" href="/css/styles.min.css">
 </head>
 
 <body>
   <h1>Chat application using Socket.IO</h1>
-  <div id="messages"></div>
-  <form id="message-form">
-    <input id="message" placeholder="message" />
-    <button id="btnSubmit">Send content to server</button>
-  </form>
-  <button id="btnSendLocation">Send location</button>
+  <div class="chat">
+    <div class="chat__sidebar">
+
+    </div>
+    <div class="chat__main">
+      <div id="messages" class="chat__messages"></div>
+
+      <div class="compose">
+        <form id="message-form">
+          <input id="message" name="message" placeholder="Message">
+          <button id="btnSubmit">Send</button>
+        </form>
+        <button id="btnSendLocation">Send location</button>
+      </div>
+    </div>
+  </div>
+
+
 
   <script id="message-template" type="text/html">
-    <div><p>{{createdAt}} - {{message}}</p></div>
+    <div class="message">
+      <p>
+          <span class="message__name">Some User Name</span>
+          <span class="message__meta">{{createdAt}}</span>
+      </p>
+      <p>{{message}}</p>
+    </div>
   </script>
 
   <script id="location-template" type="text/html">
-    <div>
+    <div class="message">
       <p>
-        <a href=`{{createdAt}} - {{url}}` target="_blank">My current location</a>
+          <span class="message__name">Some User Name</span>
+          <span class="message__meta">{{createdAt}}</span>
       </p>
+      <p><a href="{{url}}" target="_blank">My current location</a></p>
     </div>
   </script>
   <!-- SCRIPTs -->
@@ -32,3 +53,5 @@
   <script src="/socket.io/socket.io.js"></script>
   <script src="/js/chat.js"></script>
 </body>
+
+</html>
