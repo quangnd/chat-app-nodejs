@@ -24,11 +24,13 @@ const addUser = ({ id, username, room }) => {
 
   const user = { id, username, room };
   users.push(user);
+
+  return { user };
 };
 
 const removeUser = id => {
-  const idx = users.findIndex(user => users.id === id);
-  if (index !== -1) {
+  const idx = users.findIndex(user => user.id === id);
+  if (idx !== -1) {
     return users.splice(idx, 1)[0];
   }
 };
@@ -47,4 +49,4 @@ module.exports = {
   removeUser,
   getUser,
   getUsersInRoom
-}
+};

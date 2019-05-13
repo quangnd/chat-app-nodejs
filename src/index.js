@@ -26,39 +26,54 @@ app.use(express.static(publicDirPath));
 io.on("connection", socket => {
   console.log("New Websocket connection");
 
-  socket.on("join", ({ username, room }) => {
+  socket.on("join", ({ username, room }, callback) => {
+    const { error, user } = addUser({ id: socket.id, username, room });
+
+    if (error || !user) {
+      callback(error);
+    }
+
     socket.join(room);
 
-    socket.emit("message", generateMessage(`Welcome to Mun's home`));
+    socket.emit("message", generateMessage(`Welcome to ${room} room`));
     //Emit everybody except current client
     socket.broadcast
       .to(room)
-      .emit("message", generateMessage(`${username} has joined!`));
+      .emit("message", generateMessage(`${user.username} has joined!`));
 
-    //
+    callback();
   });
 
   socket.on("sendMessage", (clientMessage, callback) => {
+    const user = getUser(socket.id)
     const filter = new Filter();
 
-    if (filter.isProfane(clientMessage)) {
+    if (filter.isProfane(clientMessage.inputContent)) {
       return callback("Profanity is not allowed");
     }
-    io.emit("message", generateMessage(clientMessage)); //send message to all connected clients
+    io.to(user.room).emit("message", generateMessage(clientMessage.inputContent, user.username)); //send message to all connected clients
     callback();
   });
 
   socket.on("sendLocation", (coords, callback) => {
+    const user = getUser(socket.id)
     const message = `https://google.com/maps?q=${coords.latitude},${
       coords.longitude
     }`;
 
-    io.emit("locationMessage", generateLocationMessage(message));
+    io.to(user.room).emit("locationMessage", generateLocationMessage(message, user.username));
     callback();
   });
 
   socket.on("disconnect", () => {
-    io.emit("message", generateMessage("A user has left!"));
+    const user = removeUser(socket.id);
+
+    if (user) {
+      io.to(user.room).emit(
+        "message",
+        generateMessage(`${user.username} has left!`, 'Admin')
+      );
+    }
   });
 });
 
