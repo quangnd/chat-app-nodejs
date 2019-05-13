@@ -20,9 +20,16 @@ app.use(express.static(publicDirPath));
 io.on("connection", socket => {
   console.log("New Websocket connection");
 
-  socket.emit("message", generateMessage(`Welcome to Mun's home`));
-  //Emit everybody except current client
-  socket.broadcast.emit("message", generateMessage("A new user has joined!"));
+  socket.on("join", ({ username, room }) => {
+    socket.join(room);
+
+    socket.emit("message", generateMessage(`Welcome to Mun's home`));
+    //Emit everybody except current client
+    socket.broadcast.to(room).emit("message", generateMessage(`${username} has joined!`));
+
+    //
+  });
+
   socket.on("sendMessage", (clientMessage, callback) => {
     const filter = new Filter();
 
@@ -37,10 +44,11 @@ io.on("connection", socket => {
     const message = `https://google.com/maps?q=${coords.latitude},${
       coords.longitude
     }`;
- 
+
     io.emit("locationMessage", generateLocationMessage(message));
     callback();
   });
+
   socket.on("disconnect", () => {
     io.emit("message", generateMessage("A user has left!"));
   });
