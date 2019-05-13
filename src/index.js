@@ -8,6 +8,12 @@ const {
   generateMessage,
   generateLocationMessage
 } = require("./utils/messages");
+const {
+  addUser,
+  removeUser,
+  getUser,
+  getUsersInRoom
+} = require("./utils/users");
 
 const app = express();
 const server = http.createServer(app);
@@ -25,7 +31,9 @@ io.on("connection", socket => {
 
     socket.emit("message", generateMessage(`Welcome to Mun's home`));
     //Emit everybody except current client
-    socket.broadcast.to(room).emit("message", generateMessage(`${username} has joined!`));
+    socket.broadcast
+      .to(room)
+      .emit("message", generateMessage(`${username} has joined!`));
 
     //
   });
