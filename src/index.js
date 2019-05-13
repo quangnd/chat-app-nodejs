@@ -41,6 +41,11 @@ io.on("connection", socket => {
       .to(room)
       .emit("message", generateMessage(`${user.username} has joined!`));
 
+    io.to(room).emit('roomData', {
+      room: user.room,
+      users: getUsersInRoom(room)
+    })
+
     callback();
   });
 
@@ -50,6 +55,9 @@ io.on("connection", socket => {
 
     if (filter.isProfane(clientMessage.inputContent)) {
       return callback("Profanity is not allowed");
+    }
+    if (!user) {
+      return callback('Socket is disconnected!')
     }
     io.to(user.room).emit("message", generateMessage(clientMessage.inputContent, user.username)); //send message to all connected clients
     callback();
@@ -73,6 +81,10 @@ io.on("connection", socket => {
         "message",
         generateMessage(`${user.username} has left!`, 'Admin')
       );
+      io.to(user.room).emit('roomData', {
+        room: user.room,
+        users: getUsersInRoom(user.room)
+      })
     }
   });
 });

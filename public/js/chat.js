@@ -9,11 +9,35 @@ const $messages = document.querySelector("#messages");
 // Templates
 const messageTemplate = document.querySelector("#message-template").innerHTML;
 const locationTemplate = document.querySelector("#location-template").innerHTML;
+const sidebarTemplate = document.querySelector("#sidebar-template").innerHTML;
 
 // Options
 const { username, room } = Qs.parse(location.search, {
   ignoreQueryPrefix: true
 });
+
+const autoScroll = () => {
+  // New message element
+  const $newMessage = $messages.lastElementChild;
+
+  // Height of the new message
+  const newMessageStyles = getComputedStyle($newMessage);
+  const newMessageMargin = parseInt(newMessageStyles.marginBottom);
+  const newMessageHeight = $newMessage.offsetHeight + newMessageMargin;
+
+  // Visible height
+  const visibleHeight = $messages.offsetHeight;
+
+  // Height of messages container
+  const containerHeight = $messages.scrollHeight;
+
+  // How far have I scrolled?
+  const scrollOffset = $messages.scrollTop + visibleHeight;
+
+  if (containerHeight - newMessageHeight <= scrollOffset) {
+    $messages.scrollTop = $messages.scrollHeight;
+  }
+};
 
 socket.on("message", message => {
   const html = Mustache.render(messageTemplate, {
@@ -22,6 +46,7 @@ socket.on("message", message => {
     createdAt: moment(message.createdAt).format("hh:mm a")
   });
   $messages.insertAdjacentHTML("beforeend", html);
+  autoScroll();
 });
 
 messageForm.addEventListener("submit", e => {
@@ -29,18 +54,15 @@ messageForm.addEventListener("submit", e => {
   btnSubmit.setAttribute("disabled", "disabled");
   const inputContent = e.target.elements.message.value;
 
-  socket.emit("sendMessage", {inputContent}, error => {
+  socket.emit("sendMessage", { inputContent }, error => {
     if (error) {
       btnSubmit.removeAttribute("disabled");
-      return console.log(error);
+      return alert(error);
     }
 
-    //Simulate async task
-    setTimeout(() => {
-      btnSubmit.removeAttribute("disabled");
-      messageInput.value = "";
-      console.log("Message delivered!");
-    }, 1000);
+    btnSubmit.removeAttribute("disabled");
+    messageInput.value = "";
+    console.log("Message delivered!");
   });
 });
 
@@ -71,9 +93,18 @@ socket.on("locationMessage", message => {
   $messages.insertAdjacentHTML("beforeend", html);
 });
 
-socket.emit('join', { username, room }, (error) => {
+socket.emit("join", { username, room }, error => {
   if (error) {
-    alert(error)
-    location.href = '/'
+    alert(error);
+    location.href = "/";
   }
-})
+});
+
+socket.on("roomData", ({ room, users }) => {
+  const html = Mustache.render(sidebarTemplate, {
+    room,
+    users,
+    totalUser: users.length
+  });
+  document.querySelector("#sidebar").innerHTML = html;
+});
