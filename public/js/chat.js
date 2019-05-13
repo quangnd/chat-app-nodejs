@@ -4,9 +4,18 @@ const messageForm = document.querySelector("#message-form");
 const messageInput = document.querySelector("#message");
 const btnSubmit = document.querySelector("#btnSubmit");
 const btnSendLocation = document.querySelector("#btnSendLocation");
+const $messages = document.querySelector("#messages");
 
-socket.on("message", mess => {
-  console.log(mess);
+// Templates
+const messageTemplate = document.querySelector("#message-template").innerHTML;
+const locationTemplate = document.querySelector("#location-template").innerHTML;
+
+socket.on("message", message => {
+  const html = Mustache.render(messageTemplate, {
+    message: message.text,
+    createdAt: moment(message.createdAt).format('hh:mm a')
+  });
+  $messages.insertAdjacentHTML("beforeend", html);
 });
 
 messageForm.addEventListener("submit", e => {
@@ -19,11 +28,12 @@ messageForm.addEventListener("submit", e => {
       return console.log(error);
     }
 
+    //Simulate async task
     setTimeout(() => {
       btnSubmit.removeAttribute("disabled");
       messageInput.value = "";
       console.log("Message delivered!");
-    }, 2000);
+    }, 1000);
   });
 });
 
@@ -32,7 +42,7 @@ btnSendLocation.addEventListener("click", () => {
     return alert("Geolocation is not supported by your browser.");
   }
 
-  btnSendLocation.removeAttribute("disabled");
+  btnSendLocation.setAttribute("disabled", "disabled");
   navigator.geolocation.getCurrentPosition(function(position) {
     const { latitude, longitude } = position.coords;
     socket.emit("sendLocation", { latitude, longitude }, error => {
@@ -43,4 +53,12 @@ btnSendLocation.addEventListener("click", () => {
       console.log("Location shared");
     });
   });
+});
+
+socket.on("locationMessage", message => {
+  const html = Mustache.render(locationTemplate, {
+    url: message.url,
+    createdAt: moment(message.createdAt).format('hh:mm a')
+  });
+  $messages.insertAdjacentHTML("beforeend", html);
 });
