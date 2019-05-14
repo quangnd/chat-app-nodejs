@@ -30,7 +30,7 @@ io.on("connection", socket => {
     const { error, user } = addUser({ id: socket.id, username, room });
 
     if (error || !user) {
-      callback(error);
+      return callback(error);
     }
 
     socket.join(room);

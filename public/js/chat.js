@@ -1,5 +1,6 @@
 const socket = io();
 
+//Get elements
 const messageForm = document.querySelector("#message-form");
 const messageInput = document.querySelector("#message");
 const btnSubmit = document.querySelector("#btnSubmit");
@@ -47,6 +48,7 @@ socket.on("message", message => {
   });
   $messages.insertAdjacentHTML("beforeend", html);
   autoScroll();
+  console.log($messages.innerHTML)
 });
 
 messageForm.addEventListener("submit", e => {
